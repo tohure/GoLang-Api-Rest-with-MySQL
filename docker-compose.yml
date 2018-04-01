@@ -1,0 +1,28 @@
+version: '3.3'
+services:
+  app:
+    image: golang
+    volumes:
+      - ./app/:/usr/src/app
+    working_dir: /usr/src/app
+    command: go run app.go
+    ports:
+      - "8080:80"
+  db:
+    image: mysql
+    volumes:
+      - dbdata:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    ports:
+      - "3306:3306"
+    restart: always
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - db
+    ports:
+      - "8083:80"
+    restart: always
+volumes:
+    dbdata:
