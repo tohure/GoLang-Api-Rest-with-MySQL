@@ -5,9 +5,9 @@ services:
     volumes:
       - ./app/:/usr/src/app
     working_dir: /usr/src/app
-    command: go run app.go
     ports:
-      - "8080:80"
+      - "80:8080"
+    command:  bash -c "go get github.com/gin-gonic/gin && go run server.go"
   db:
     image: mysql
     volumes:
