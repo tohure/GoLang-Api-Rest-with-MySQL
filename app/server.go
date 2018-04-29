@@ -11,9 +11,9 @@ import (
 var db, err = sql.Open("mysql", "root:123456@tcp(golangdock_db_1)/golang")
 
 type Product struct {
-    Id int `db:"id"`
-    Name string `db:"name" form:"name"`
-    Price int `db:"price" form:"price"`
+    Id int `db:"id" json:"id"`
+    Name string `db:"name" json:"title"`
+    Price int `db:"price" json:"completed"`
 }
 
 func getAll(c *gin.Context){
@@ -25,7 +25,7 @@ func getAll(c *gin.Context){
     rows, err := db.Query("select id, name, price from product;")
 
     if err != nil {
-        fmt.Print(err.Error())
+        c.JSON(422, gin.H{"error": err})
     }
 
     for rows.Next() {
@@ -46,7 +46,7 @@ func getById(c *gin.Context) {
 
     err = row.Scan(&product.Id, &product.Name, &product.Price)
     if err != nil {
-        c.JSON(http.StatusOK, nil)
+        c.JSON(http.StatusOK, "Fallo en la BD")
     } else {
         c.JSON(http.StatusOK, product)
     }
