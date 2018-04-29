@@ -1,22 +1,81 @@
 package main
 
-import "fmt"
-import "github.com/gin-gonic/gin"
-import "net/http"
+import (
+    "database/sql"
+    "fmt"
+    "net/http"
+    "github.com/gin-gonic/gin"
+    _ "github.com/go-sql-driver/mysql"
+)
+
+var db, err = sql.Open("mysql", "root:123456@tcp(golangdock_db_1)/golang")
+
+type Product struct {
+    Id int `db:"id"`
+    Name string `db:"name" form:"name"`
+    Price int `db:"price" form:"price"`
+}
+
+func getAll(c *gin.Context){
+    var (
+        product Product
+        products []Product
+    )
+
+    rows, err := db.Query("select id, name, price from product;")
+
+    if err != nil {
+        fmt.Print(err.Error())
+    }
+
+    for rows.Next() {
+        rows.Scan(&product.Id, &product.Name, &product.Price)
+        products = append(products, product)
+    }
+
+    defer rows.Close()
+
+    c.JSON(http.StatusOK, products)
+}
+
+func getById(c *gin.Context) {
+    var product Product
+
+    id := c.Param("id")
+    row := db.QueryRow("select id, name, price from product where id = ?;", id)
+
+    err = row.Scan(&product.Id, &product.Name, &product.Price)
+    if err != nil {
+        c.JSON(http.StatusOK, nil)
+    } else {
+        c.JSON(http.StatusOK, product)
+    }
+}
 
 func main() {
 
-    fmt.Println("Running Server - Tohure")
+    if err != nil {
+        fmt.Print(err.Error())
+    }
+    defer db.Close()
 
-    r := gin.Default()
+    err = db.Ping()
+    if err != nil {
+        fmt.Print(err.Error())
+    }
 
-    r.GET("/", func(c *gin.Context) {
+    router := gin.Default()
+
+    //Test
+    router.GET("/", func(c *gin.Context) {
         c.String(http.StatusOK, "Hello Tohure")
     })
 
-    r.GET("/ping", func(c *gin.Context) {
-        c.String(http.StatusOK, "pong")
-    })
+    router.GET("/api/product/:id", getById)
+    router.GET("/api/products", getAll)
+    //router.POST("/api/product", add)
+    //router.PUT("/api/product/:id", update)
+    //router.DELETE("/api/product/:id", delete)
 
-    r.Run(":8080")
+    router.Run(":8080")
 }
