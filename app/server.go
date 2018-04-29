@@ -45,8 +45,9 @@ func getById(c *gin.Context) {
     row := db.QueryRow("select id, name, price from product where id = ?;", id)
 
     err = row.Scan(&product.Id, &product.Name, &product.Price)
+
     if err != nil {
-        c.JSON(http.StatusOK, "Fallo en la BD")
+        c.JSON(422, "Fallo en la BD")
     } else {
         c.JSON(http.StatusOK, product)
     }
